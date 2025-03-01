@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Map Prototype</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    #map {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+    .header, .footer {
+      background-color: lightgray;
+      padding: 10px;
+      text-align: center;
+    }
+    .content {
+      background-color: lightblue;
+      flex-grow: 1;
+      padding: 10px;
+    }
+  </style>
+  <!-- LOAD our MapBox api key. I'm going to .gitignore that file, so the secret is not
+   stored to github -->
+  <script src="secret_do_not_upload_to_github.js"></script>
+</head>
+<body>
+  <div class="header">
+    <form id="mapForm">
+        <input type="number" id="lat" placeholder="Latitude" step="any" required>
+        <input type="number" id="lng" placeholder="Longitude" step="any" required>
+        <input type="number" id="radius" placeholder="Radius (m)" required>
+        <button type="submit">Update Map</button>
+    </form>
+  </div>
+  <div id="map"></div>
+  <div class="footer">
+    <p>Hello, this is my footer<br />Blah blah</p>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    var latitude = 41.010418;
+    var longitude = -73.920776;
+    var radius = 500; // in meters
+    var sideLength = 500; // in meters
+    var map = L.map('map').setView([latitude, longitude], 16);
+
+    // Add a Mapbox tile layer to the map
+    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + mapBoxToken, {
+      maxZoom: 18,
+      id: 'mapbox/streets-v11', // You can use other styles like 'mapbox/satellite-v9'
+      tileSize: 512,
+      zoomOffset: -1,
+      accessToken: mapBoxToken
+    }).addTo(map);
+
+
+    // Function to draw a circle on the map
+    function drawCircle(lat, lng, radius) {
+      L.circle([lat, lng], {
+        color: 'red',
+        fillColor: '#f03',
+        fillOpacity: 0.5,
+        radius: radius
+      }).addTo(map);
+    }
+
+    // Function to draw a square on the map
+    function drawSquare(lat, lng, sideLength) {
+      // Calculate the coordinates for the polygon's corners (technically it's not a square)
+      var nyc1DegLon = 84000; // 1 degree of longitude ~ 111,000 m in the NYC area
+      var nyc1DegLat = 111100; // 1 degree of latitude ~ 95,000 m in the NYC area
+      var lowerLeft = [lat, lng];
+      var lowerRight = [lat, lng + (sideLength / nyc1DegLon)]; 
+      var upperRight = [lat + (sideLength / nyc1DegLat), lng + (sideLength / nyc1DegLon)];
+      var upperLeft = [lat + (sideLength / nyc1DegLat), lng];
+
+      // Draw the square
+      var square = L.polygon([lowerLeft, lowerRight, upperRight, upperLeft, lowerLeft], {
+        color: 'blue',
+        fillColor: '#3388ff',
+        fillOpacity: 0.5
+      }).addTo(map);
+    }
+
+    // Form submission event listener
+    document.getElementById('mapForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      var latitude = parseFloat(document.getElementById('lat').value);
+      var longitude = parseFloat(document.getElementById('lng').value);
+      var radius = parseFloat(document.getElementById('radius').value);
+
+      // Clear existing layers
+      map.eachLayer(function(layer) {
+        if (!layer._url) { // Don't remove the tile layer
+          map.removeLayer(layer);
+        }
+      });
+
+      // Draw the circle and the square
+      drawCircle(latitude, longitude, radius);
+      drawSquare(latitude, longitude, sideLength); // Using the radius as the side length for simplicity
+
+      // Recenter the map on the new coordinates
+      map.setView([latitude, longitude], 16);
+    });
+    
+    // Draw the circle and the square
+    drawCircle(latitude, longitude, radius);
+    drawSquare(latitude, longitude, sideLength);
+  </script>
+</body>
+</html>
