@@ -27,8 +27,7 @@
     }
   </style>
   <!-- LOAD our MapBox api key. I'm going to .gitignore that file, so the secret is not
-   stored to github.
-   This file should contain the line
+   stored to github. This file should contain the line
       var mapBoxToken = '<REPLACE WITH MY MAPBOX TOKEN>'
    -->
   <script src="secret_do_not_upload_to_github.js"></script>
@@ -54,6 +53,7 @@
     var radius = 500; // in meters
     var sideLength = 500; // in meters
     var map = L.map('map').setView([latitude, longitude], 16);
+    var fracOfDegree = 0.003
 
     // Add a Mapbox tile layer to the map
     L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + mapBoxToken, {
@@ -64,14 +64,28 @@
       accessToken: mapBoxToken
     }).addTo(map);
 
-
     // Function to draw a circle on the map
     function drawCircle(lat, lng, radius) {
-      L.circle([lat, lng], {
+      var circle = L.circle([lat, lng], {
         color: 'red',
-        fillColor: '#f03',
-        fillOpacity: 0.5,
-        radius: radius
+        fillOpacity: 0.1,
+        radius: radius,
+        weight: 2,
+      });
+      circle.addTo(map);
+      return circle;
+    }
+
+    function drawSegment(lat, lng, degreesPerSide) {
+      var lowerLeft = [lat, lng];
+      var lowerRight = [lat, lng + degreesPerSide]; 
+      var upperRight = [lat + degreesPerSide, lng + degreesPerSide];
+      var upperLeft = [lat + degreesPerSide, lng];
+      // Draw the square
+      var square = L.polygon([lowerLeft, lowerRight, upperRight, upperLeft, lowerLeft], {
+        color: 'green',
+        fillOpacity: 0.1,
+        weight: 2,
       }).addTo(map);
     }
 
@@ -84,13 +98,18 @@
       var lowerRight = [lat, lng + (sideLength / nyc1DegLon)]; 
       var upperRight = [lat + (sideLength / nyc1DegLat), lng + (sideLength / nyc1DegLon)];
       var upperLeft = [lat + (sideLength / nyc1DegLat), lng];
-
       // Draw the square
       var square = L.polygon([lowerLeft, lowerRight, upperRight, upperLeft, lowerLeft], {
         color: 'blue',
-        fillColor: '#3388ff',
-        fillOpacity: 0.5
+        fillOpacity: 0.1,
+        weight: 2,
       }).addTo(map);
+    }
+
+    // Example rounding PI to nearest 0.0001: 3.1415
+    // Example rounding PI to nearest 0.05: 3.1
+    function roundDownToNearestFractionOfDegree(numberToRoundDown, fractionOfDegree) {
+      return Math.floor(numberToRoundDown/fractionOfDegree) * fractionOfDegree;
     }
 
     // Form submission event listener
@@ -109,16 +128,42 @@
       });
 
       // Draw the circle and the square
-      drawCircle(latitude, longitude, radius);
+      var circle = drawCircle(latitude, longitude, radius);
       drawSquare(latitude, longitude, sideLength); // Using the radius as the side length for simplicity
+      drawSegment(latitude, longitude, fracOfDegree);
+
+      // Draw the bounding square with dashed border
+      var boundingSquare = L.rectangle(circle.getBounds(), {
+          color: 'red',
+          fillOpacity: 0,
+          dashArray: '5, 10',
+          weight: 2,
+      });
+      boundingSquare.addTo(map);
 
       // Recenter the map on the new coordinates
       map.setView([latitude, longitude], 16);
     });
     
     // Draw the circle and the square
-    drawCircle(latitude, longitude, radius);
-    drawSquare(latitude, longitude, sideLength);
+    circle = drawCircle(latitude, longitude, radius);
+    // Draw the bounding square with dashed border
+    var boundingSquare = L.rectangle(circle.getBounds(), {
+      color: 'red',
+      fillOpacity: 0,
+      dashArray: '5, 10',
+      weight: 2,
+    });
+    boundingSquare.addTo(map);
+    
+    var west = circle.getBounds().getWest();
+    var westAdj = roundDownToNearestFractionOfDegree(west, fracOfDegree);
+    var south = circle.getBounds().getSouth();
+    var southAdj = roundDownToNearestFractionOfDegree(south, fracOfDegree);
+    drawSegment(southAdj, westAdj, fracOfDegree);
+    drawSegment(southAdj+fracOfDegree, westAdj, fracOfDegree);
+    drawSegment(southAdj, westAdj+fracOfDegree, fracOfDegree);
+    drawSegment(southAdj+fracOfDegree, westAdj+fracOfDegree, fracOfDegree);
   </script>
 </body>
 </html>
