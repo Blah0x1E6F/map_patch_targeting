@@ -227,9 +227,10 @@
           var nw = L.latLng(southAdj + fracOfDegree, westAdj);
           if (isOverlap(circle, sw, se, ne, nw)) {
             drawSegment(southAdj, westAdj, fracOfDegree);
-            var strRepr = fracLabel + (southAdj.toFixed(3)*1000).toString()+(westAdj.toFixed(3)*1000).toString();
-            console.log(strRepr);
-            console.log(southAdj.toString()+','+westAdj.toString());
+            var cornerRepresentation = fracLabel 
+              + (southAdj.toFixed(3)*1000).toString() 
+              + (westAdj.toFixed(3)*1000).toString();
+            console.log(cornerRepresentation);
           }
           westAdj += fracOfDegree;
         }
