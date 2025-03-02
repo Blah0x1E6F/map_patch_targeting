@@ -60,8 +60,10 @@
     <form id="mapForm">
       <label for="latlon">Lat,lon:</label>       
       <input type="text" id="latlon" value="41.010418,-73.920776" required autofocus>
-      <label for="radius">Radius (m):</label>
+      
+      <label for="radius">R (m):</label>
       <input type="number" id="radius" value="500" step="50" required>
+      
       <label for="seg_size">Segments:</label>
       <select id="seg_size" name="segment_size">
         <option value="x-small">X-Small</option>
@@ -70,7 +72,8 @@
         <option value="large">Large</option>
         <option value="x-large">X-large</option>
       </select>
-      <label for="circle_anchoring">Circle anchoring:</label>
+      
+      <label for="circle_anchoring">Circle at:</label>
       <select id="circle_anchoring" name="circle_anchoring">
         <option value="corner" selected>Corner</option>
         <option value="center">Center</option>
@@ -170,16 +173,22 @@
       var radius = parseFloat(document.getElementById('radius').value);
       var seg_size = document.getElementById('seg_size').value;
       var fracOfDegree = FRACTION_OF_DEGREE_MED;
+      var fracLabel = 'M';
       console.log(fracOfDegree);
       if (seg_size == 'x-small') {
         fracOfDegree = fracOfDegree / 3;
+        fracLabel = 'XS';
       } else if (seg_size == 'small') {
         fracOfDegree = fracOfDegree / 2;
+        fracLabel = 'S';
       } else if (seg_size == 'large') {
         fracOfDegree = fracOfDegree * 2;
+        fracLabel = 'L';
       } else if (seg_size == 'x-large') {
         fracOfDegree = fracOfDegree * 4;
+        fracLabel = 'XL';
       }
+      
 
       // Point positioning relative to nearest geo segment.
       var circle_anchoring = document.getElementById('circle_anchoring').value;
@@ -218,6 +227,9 @@
           var nw = L.latLng(southAdj + fracOfDegree, westAdj);
           if (isOverlap(circle, sw, se, ne, nw)) {
             drawSegment(southAdj, westAdj, fracOfDegree);
+            var strRepr = fracLabel + (southAdj.toFixed(3)*1000).toString()+(westAdj.toFixed(3)*1000).toString();
+            console.log(strRepr);
+            console.log(southAdj.toString()+','+westAdj.toString());
           }
           westAdj += fracOfDegree;
         }
