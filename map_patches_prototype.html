@@ -15,7 +15,7 @@
       flex-direction: column;
       flex-grow: 1;
     }
-    .header, .footer {
+    #header, #footer {
       background-color: lightgray;
       padding: 10px;
       text-align: center;
@@ -28,34 +28,34 @@
   </style>
   <!-- LOAD our MapBox api key. I'm going to .gitignore that file, so the secret is not
    stored to github. This file should contain the line
-      var mapBoxToken = '<REPLACE WITH MY MAPBOX TOKEN>'
-   -->
+      var mapBoxToken = '<REPLACE WITH MY MAPBOX TOKEN>' -->
   <script src="secret_do_not_upload_to_github.js"></script>
 </head>
 <body>
-  <div class="header">
+  <div id="header">
     <form id="mapForm">
         <input type="number" id="lat" placeholder="Latitude" step="any" required>
-        <input type="number" id="lng" placeholder="Longitude" step="any" required>
+        <input type="number" id="lon" placeholder="Longitude" step="any" required>
         <input type="number" id="radius" placeholder="Radius (m)" required>
         <button type="submit">Update Map</button>
     </form>
   </div>
   <div id="map"></div>
-  <div class="footer">
+  <div id="footer">
     <p>Hello, this is my footer<br />Blah blah</p>
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    var latitude = 41.010418;
-    var longitude = -73.920776;
-    var radius = 500; // in meters
-    var sideLength = 500; // in meters
-    var map = L.map('map').setView([latitude, longitude], 16);
-    var fracOfDegree = 0.003
+    "use strict";
 
-    // Add a Mapbox tile layer to the map
+    var defLat = 41.010418;
+    var defLon = -73.920776;
+    var defRadius = 500; // in meters
+    var fracOfDegree = 0.001;
+    const WEIGHT = 2;
+    
+    var map = L.map('map').setView([defLat, defLon], 16);
     L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + mapBoxToken, {
       maxZoom: 18,
       id: 'mapbox/streets-v11', // You can use other styles like 'mapbox/satellite-v9'
@@ -64,46 +64,30 @@
       accessToken: mapBoxToken
     }).addTo(map);
 
-    // Function to draw a circle on the map
-    function drawCircle(lat, lng, radius) {
-      var circle = L.circle([lat, lng], {
+    function drawCircle(lat, lon, radius) {
+      var circle = L.circle([lat, lon], {
         color: 'red',
         fillOpacity: 0.1,
         radius: radius,
-        weight: 2,
+        weight: WEIGHT,
       });
       circle.addTo(map);
       return circle;
     }
 
-    function drawSegment(lat, lng, degreesPerSide) {
-      var lowerLeft = [lat, lng];
-      var lowerRight = [lat, lng + degreesPerSide]; 
-      var upperRight = [lat + degreesPerSide, lng + degreesPerSide];
-      var upperLeft = [lat + degreesPerSide, lng];
-      // Draw the square
-      var square = L.polygon([lowerLeft, lowerRight, upperRight, upperLeft, lowerLeft], {
+    // I use "segment" to refer to the shape defined by lower-left corner and N deg east & N deg north.
+    // Technically it's not a square; not sure what this shape is called in cartography.
+    function drawSegment(lat, lon, degreesPerSide) {
+      var lowerLeft = [lat, lon];
+      var lowerRight = [lat, lon + degreesPerSide]; 
+      var upperRight = [lat + degreesPerSide, lon + degreesPerSide];
+      var upperLeft = [lat + degreesPerSide, lon];
+      var segment = L.polygon([lowerLeft, lowerRight, upperRight, upperLeft, lowerLeft], {
         color: 'green',
         fillOpacity: 0.1,
-        weight: 2,
+        weight: 1,
       }).addTo(map);
-    }
-
-    // Function to draw a square on the map
-    function drawSquare(lat, lng, sideLength) {
-      // Calculate the coordinates for the polygon's corners (technically it's not a square)
-      var nyc1DegLon = 84000; // 1 degree of longitude ~ 111,000 m in the NYC area
-      var nyc1DegLat = 111100; // 1 degree of latitude ~ 95,000 m in the NYC area
-      var lowerLeft = [lat, lng];
-      var lowerRight = [lat, lng + (sideLength / nyc1DegLon)]; 
-      var upperRight = [lat + (sideLength / nyc1DegLat), lng + (sideLength / nyc1DegLon)];
-      var upperLeft = [lat + (sideLength / nyc1DegLat), lng];
-      // Draw the square
-      var square = L.polygon([lowerLeft, lowerRight, upperRight, upperLeft, lowerLeft], {
-        color: 'blue',
-        fillOpacity: 0.1,
-        weight: 2,
-      }).addTo(map);
+      return segment;
     }
 
     // Example rounding PI to nearest 0.0001: 3.1415
@@ -112,60 +96,80 @@
       return Math.floor(numberToRoundDown/fractionOfDegree) * fractionOfDegree;
     }
 
+    function isOverlap(circle, sw, se, ne, nw) {
+      var center = circle.getLatLng();
+      var radius = circle.getRadius();
+      if (center.distanceTo(sw) <= radius 
+        || center.distanceTo(se) <= radius
+        || center.distanceTo(ne) <= radius
+        || center.distanceTo(nw) <= radius
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
     // Form submission event listener
-    document.getElementById('mapForm').addEventListener('submit', function(event) {
-      event.preventDefault();
+    // document.getElementById('mapForm').addEventListener('submit', function(event) {
+    //   event.preventDefault();
 
-      var latitude = parseFloat(document.getElementById('lat').value);
-      var longitude = parseFloat(document.getElementById('lng').value);
-      var radius = parseFloat(document.getElementById('radius').value);
+    //   var lat = parseFloat(document.getElementById('lat').value);
+    //   var lon = parseFloat(document.getElementById('lon').value);
+    //   var radius = parseFloat(document.getElementById('radius').value);
 
-      // Clear existing layers
-      map.eachLayer(function(layer) {
-        if (!layer._url) { // Don't remove the tile layer
-          map.removeLayer(layer);
-        }
-      });
+    //   // Clear existing layers
+    //   map.eachLayer(function(layer) {
+    //     if (!layer._url) { // Don't remove the tile layer
+    //       map.removeLayer(layer);
+    //     }
+    //   });
 
-      // Draw the circle and the square
-      var circle = drawCircle(latitude, longitude, radius);
-      drawSquare(latitude, longitude, sideLength); // Using the radius as the side length for simplicity
-      drawSegment(latitude, longitude, fracOfDegree);
+    //   var circle = drawCircle(latitude, longitude, radius);
+    //   drawSegment(latitude, longitude, fracOfDegree);
 
-      // Draw the bounding square with dashed border
-      var boundingSquare = L.rectangle(circle.getBounds(), {
-          color: 'red',
-          fillOpacity: 0,
-          dashArray: '5, 10',
-          weight: 2,
-      });
-      boundingSquare.addTo(map);
+    //   // Draw the bounding square with dashed border
+    //   var boundingSquare = L.rectangle(circle.getBounds(), {
+    //       color: 'red',
+    //       fillOpacity: 0,
+    //       dashArray: '5, 5',
+    //       weight: WEIGHT,
+    //   });
+    //   boundingSquare.addTo(map);
 
-      // Recenter the map on the new coordinates
-      map.setView([latitude, longitude], 16);
-    });
+    //   // Recenter the map on the new coordinates
+    //   map.setView([latitude, longitude], 16);
+    // });
     
-    // Draw the circle and the square
-    circle = drawCircle(latitude, longitude, radius);
-    // Draw market at center of circle
-    var marker = L.marker([latitude, longitude]).addTo(map);
-    // Draw the bounding square with dashed border
-    var boundingSquare = L.rectangle(circle.getBounds(), {
+    var circle = drawCircle(defLat, defLon, defRadius);
+    var marker = L.marker([defLat, defLon]).addTo(map);
+    L.rectangle(circle.getBounds(), {
       color: 'red',
       fillOpacity: 0,
       dashArray: '5, 10',
-      weight: 2,
-    });
-    boundingSquare.addTo(map);
+      weight: WEIGHT,
+    }).addTo(map);
     
-    var west = circle.getBounds().getWest();
-    var westAdj = roundDownToNearestFractionOfDegree(west, fracOfDegree);
+    // Get the lon (west) and lat (south) that's the nearest fracOfDegree left of and below the bounding square
     var south = circle.getBounds().getSouth();
     var southAdj = roundDownToNearestFractionOfDegree(south, fracOfDegree);
-    drawSegment(southAdj, westAdj, fracOfDegree);
-    drawSegment(southAdj+fracOfDegree, westAdj, fracOfDegree);
-    drawSegment(southAdj, westAdj+fracOfDegree, fracOfDegree);
-    drawSegment(southAdj+fracOfDegree, westAdj+fracOfDegree, fracOfDegree);
+
+    // Draw tiles that overlap the circle's bounding square
+    while (southAdj < circle.getBounds().getNorth()) {
+      var west = circle.getBounds().getWest();
+      var westAdj = roundDownToNearestFractionOfDegree(west, fracOfDegree);
+      while (westAdj < circle.getBounds().getEast()) {
+        var sw = L.latLng(southAdj, westAdj);
+        var se = L.latLng(southAdj, westAdj + fracOfDegree);
+        var ne = L.latLng(southAdj + fracOfDegree, westAdj + fracOfDegree);
+        var nw = L.latLng(southAdj + fracOfDegree, westAdj);
+        if (isOverlap(circle, sw, se, ne, nw)) {
+          drawSegment(southAdj, westAdj, fracOfDegree);
+        }
+        westAdj += fracOfDegree;
+      }
+      southAdj += fracOfDegree;
+    }
   </script>
 </body>
 </html>
