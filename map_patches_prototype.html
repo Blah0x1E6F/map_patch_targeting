@@ -5,6 +5,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
     html, body {
+      font-family: Arial, sans-serif;
       height: 100%;
       margin: 0;
       display: flex;
@@ -34,27 +35,29 @@
 <body>
   <div id="header">
     <form id="mapForm">
-        <input type="number" id="lat" placeholder="Latitude" step="any" required>
-        <input type="number" id="lon" placeholder="Longitude" step="any" required>
-        <input type="number" id="radius" placeholder="Radius (m)" required>
-        <button type="submit">Update Map</button>
+      <label for="lat">Lat:</label>       
+      <input type="number" id="lat" value="41.010418" step="any" required autofocus>
+      <label for="lon">Lon:</label>
+      <input type="number" id="lon" value="-73.920776" step="any" required>
+      <label for="radius">Radius (m):</label>
+      <input type="number" id="radius" value="500" required>
+      <button type="submit">Submit</button>
     </form>
   </div>
   <div id="map"></div>
   <div id="footer">
-    <p>Hello, this is my footer<br />Blah blah</p>
+    Targeting string: 
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
     "use strict";
 
-    var defLat = 41.010418;
-    var defLon = -73.920776;
-    var defRadius = 500; // in meters
     var fracOfDegree = 0.001;
     const WEIGHT = 2;
     
+    var defLat = 41.010418;
+    var defLon = -73.920776;
     var map = L.map('map').setView([defLat, defLon], 16);
     L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + mapBoxToken, {
       maxZoom: 18,
@@ -63,6 +66,8 @@
       zoomOffset: -1,
       accessToken: mapBoxToken
     }).addTo(map);
+
+    L.marker([defLat, defLon]).addTo(map);
 
     function drawCircle(lat, lon, radius) {
       var circle = L.circle([lat, lon], {
@@ -111,65 +116,50 @@
     }
 
     // Form submission event listener
-    // document.getElementById('mapForm').addEventListener('submit', function(event) {
-    //   event.preventDefault();
+    document.getElementById('mapForm').addEventListener('submit', function(event) {
+      event.preventDefault();
 
-    //   var lat = parseFloat(document.getElementById('lat').value);
-    //   var lon = parseFloat(document.getElementById('lon').value);
-    //   var radius = parseFloat(document.getElementById('radius').value);
+      var lat = parseFloat(document.getElementById('lat').value);
+      var lon = parseFloat(document.getElementById('lon').value);
+      var radius = parseFloat(document.getElementById('radius').value);
 
-    //   // Clear existing layers
-    //   map.eachLayer(function(layer) {
-    //     if (!layer._url) { // Don't remove the tile layer
-    //       map.removeLayer(layer);
-    //     }
-    //   });
+      // Make things symmetrical :-)
+      // lat = roundDownToNearestFractionOfDegree(lat, fracOfDegree);
+      // lon = roundDownToNearestFractionOfDegree(lon, fracOfDegree);
 
-    //   var circle = drawCircle(latitude, longitude, radius);
-    //   drawSegment(latitude, longitude, fracOfDegree);
-
-    //   // Draw the bounding square with dashed border
-    //   var boundingSquare = L.rectangle(circle.getBounds(), {
-    //       color: 'red',
-    //       fillOpacity: 0,
-    //       dashArray: '5, 5',
-    //       weight: WEIGHT,
-    //   });
-    //   boundingSquare.addTo(map);
-
-    //   // Recenter the map on the new coordinates
-    //   map.setView([latitude, longitude], 16);
-    // });
-    
-    var circle = drawCircle(defLat, defLon, defRadius);
-    var marker = L.marker([defLat, defLon]).addTo(map);
-    L.rectangle(circle.getBounds(), {
-      color: 'red',
-      fillOpacity: 0,
-      dashArray: '5, 10',
-      weight: WEIGHT,
-    }).addTo(map);
-    
-    // Get the lon (west) and lat (south) that's the nearest fracOfDegree left of and below the bounding square
-    var south = circle.getBounds().getSouth();
-    var southAdj = roundDownToNearestFractionOfDegree(south, fracOfDegree);
-
-    // Draw tiles that overlap the circle's bounding square
-    while (southAdj < circle.getBounds().getNorth()) {
-      var west = circle.getBounds().getWest();
-      var westAdj = roundDownToNearestFractionOfDegree(west, fracOfDegree);
-      while (westAdj < circle.getBounds().getEast()) {
-        var sw = L.latLng(southAdj, westAdj);
-        var se = L.latLng(southAdj, westAdj + fracOfDegree);
-        var ne = L.latLng(southAdj + fracOfDegree, westAdj + fracOfDegree);
-        var nw = L.latLng(southAdj + fracOfDegree, westAdj);
-        if (isOverlap(circle, sw, se, ne, nw)) {
-          drawSegment(southAdj, westAdj, fracOfDegree);
+      // Clear existing layers
+      map.eachLayer(function(layer) {
+        if (!layer._url) { // Don't remove the tile layer
+          map.removeLayer(layer);
         }
-        westAdj += fracOfDegree;
+      });
+
+      // Recenter the map on the new coordinates
+      map.setView([lat, lon], 16);
+
+      var circle = drawCircle(lat, lon, radius);
+      var marker = L.marker([lat, lon]).addTo(map);
+
+      // Get the lon (west) and lat (south) that's the nearest fracOfDegree left of and below the bounding square
+      var south = circle.getBounds().getSouth();
+      var southAdj = roundDownToNearestFractionOfDegree(south, fracOfDegree);
+      // Draw tiles that overlap the circle's bounding square
+      while (southAdj < circle.getBounds().getNorth()) {
+        var west = circle.getBounds().getWest();
+        var westAdj = roundDownToNearestFractionOfDegree(west, fracOfDegree);
+        while (westAdj < circle.getBounds().getEast()) {
+          var sw = L.latLng(southAdj, westAdj);
+          var se = L.latLng(southAdj, westAdj + fracOfDegree);
+          var ne = L.latLng(southAdj + fracOfDegree, westAdj + fracOfDegree);
+          var nw = L.latLng(southAdj + fracOfDegree, westAdj);
+          if (isOverlap(circle, sw, se, ne, nw)) {
+            drawSegment(southAdj, westAdj, fracOfDegree);
+          }
+          westAdj += fracOfDegree;
+        }
+        southAdj += fracOfDegree;
       }
-      southAdj += fracOfDegree;
-    }
+    });    
   </script>
 </body>
 </html>
