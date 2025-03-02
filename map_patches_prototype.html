@@ -11,6 +11,9 @@
       display: flex;
       flex-direction: column;
     }
+    label {
+      margin-left: 10px
+    }
     #map {
       display: flex;
       flex-direction: column;
@@ -40,20 +43,27 @@
       <label for="lon">Lon:</label>
       <input type="number" id="lon" value="-73.920776" step="any" required>
       <label for="radius">Radius (m):</label>
-      <input type="number" id="radius" value="500" required>
+      <input type="number" id="radius" value="500" step="50" required>
+      <label for="seg_size">Segment size:</label>
+      <select id="seg_size" name="segment_size">
+        <option value="small">Small</option>
+        <option value="medium" selected>Medium</option>
+        <option value="large">Large</option>
+        <option value="x-large">X-large</option>
+      </select>
       <button type="submit">Submit</button>
     </form>
   </div>
   <div id="map"></div>
   <div id="footer">
-    Targeting string: 
+    Targeting string: see console log (Cmd-Option-I)
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
     "use strict";
 
-    var fracOfDegree = 0.001;
+    var FRACTION_OF_DEGREE_MED = 0.003;
     const WEIGHT = 2;
     
     var defLat = 41.010418;
@@ -122,10 +132,21 @@
       var lat = parseFloat(document.getElementById('lat').value);
       var lon = parseFloat(document.getElementById('lon').value);
       var radius = parseFloat(document.getElementById('radius').value);
+      var seg_size = document.getElementById('seg_size').value;
+      var fracOfDegree = FRACTION_OF_DEGREE_MED;
+      console.log(fracOfDegree);
+      if (seg_size == 'small') {
+        fracOfDegree = fracOfDegree / 2;
+      } else if (seg_size == 'large') {
+        fracOfDegree = fracOfDegree * 2;
+      } else if (seg_size == 'x-large') {
+        fracOfDegree = fracOfDegree * 4;
+      }
+      console.log(fracOfDegree);
 
       // Make things symmetrical :-)
-      // lat = roundDownToNearestFractionOfDegree(lat, fracOfDegree);
-      // lon = roundDownToNearestFractionOfDegree(lon, fracOfDegree);
+      lat = roundDownToNearestFractionOfDegree(lat, fracOfDegree);
+      lon = roundDownToNearestFractionOfDegree(lon, fracOfDegree);
 
       // Clear existing layers
       map.eachLayer(function(layer) {
