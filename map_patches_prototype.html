@@ -24,6 +24,20 @@
       padding: 10px;
       text-align: center;
     }
+    #presets {
+      padding-top: 7px;
+    }
+    #presets a {
+      padding-inline: 5px;
+      display: inline-block;
+      margin: 0 10px;
+      color: #007BFF;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    #presets a:hover {
+      text-decoration: underline;
+    }
     .content {
       background-color: lightblue;
       flex-grow: 1;
@@ -34,14 +48,18 @@
    stored to github. This file should contain the line
       var mapBoxToken = '<REPLACE WITH MY MAPBOX TOKEN>' -->
   <script src="secret_do_not_upload_to_github.js"></script>
+  <script>
+    function populateForm(preset) {
+      const latLonInput = document.getElementById('latlon');
+      latLonInput.value = preset;
+    }
+  </script>
 </head>
 <body>
   <div id="header">
     <form id="mapForm">
-      <label for="lat">Lat:</label>       
-      <input type="number" id="lat" value="41.010418" step="any" required autofocus>
-      <label for="lon">Lon:</label>
-      <input type="number" id="lon" value="-73.920776" step="any" required>
+      <label for="latlon">Lat,lon:</label>       
+      <input type="text" id="latlon" value="41.010418,-73.920776" required autofocus>
       <label for="radius">Radius (m):</label>
       <input type="number" id="radius" value="500" step="50" required>
       <label for="seg_size">Segment size:</label>
@@ -53,6 +71,14 @@
       </select>
       <button type="submit">Submit</button>
     </form>
+    <div id="presets">
+      Presets:
+      <a onclick="populateForm('40.735378,-73.990694')">New York</a> 
+      <a onclick="populateForm('37.755310,-122.420961')">San Francisco</a> 
+      <a onclick="populateForm('48.852916,2.350069')">Paris</a> 
+      <a onclick="populateForm('51.507754,-0.127941')">London</a>
+      <a onclick="populateForm('41.010418,-73.920776')">Maksim's crib</a>
+    </div>
   </div>
   <div id="map"></div>
   <div id="footer">
@@ -129,8 +155,11 @@
     document.getElementById('mapForm').addEventListener('submit', function(event) {
       event.preventDefault();
 
-      var lat = parseFloat(document.getElementById('lat').value);
-      var lon = parseFloat(document.getElementById('lon').value);
+      const latLonStr = document.getElementById('latlon').value;
+      const values = latLonStr.split(',');
+      var lat = parseFloat(values[0]);
+      var lon = parseFloat(values[1]);
+
       var radius = parseFloat(document.getElementById('radius').value);
       var seg_size = document.getElementById('seg_size').value;
       var fracOfDegree = FRACTION_OF_DEGREE_MED;

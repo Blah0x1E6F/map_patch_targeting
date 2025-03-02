@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Form</title>
+    <title>Form with Classic Links</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,7 +16,7 @@
             display: block;
             margin-bottom: 5px;
         }
-        input {
+        input, select {
             width: 100%;
             padding: 8px;
             margin-bottom: 10px;
@@ -33,16 +33,68 @@
         button:hover {
             background-color: #0056b3;
         }
+        .preset-links {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .preset-links a {
+            color: #007BFF;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .preset-links a:hover {
+            text-decoration: underline;
+        }
     </style>
+    <script>
+        function populateForm(preset) {
+            const nameInput = document.getElementById('name');
+            const emailInput = document.getElementById('email');
+            const sizeSelect = document.getElementById('size');
+
+            if (preset === 'preset1') {
+                nameInput.value = 'Alice Johnson';
+                emailInput.value = 'alice.johnson@example.com';
+                sizeSelect.value = 'small';
+            } else if (preset === 'preset2') {
+                nameInput.value = 'Bob Smith';
+                emailInput.value = 'bob.smith@example.com';
+                sizeSelect.value = 'large';
+            }
+        }
+
+        function handleSubmit(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const size = document.getElementById('size').value;
+
+            console.log('Name:', name);
+            console.log('Email:', email);
+            console.log('Size:', size);
+        }
+    </script>
 </head>
 <body>
-    <h1>Simple Form</h1>
-    <form>
+    <h1>Form with Classic Links</h1>
+    <div class="preset-links">
+        <a onclick="populateForm('preset1')">Preset 1</a>
+        <a onclick="populateForm('preset2')">Preset 2</a>
+    </div>
+    <form onsubmit="handleSubmit(event)">
         <label for="name">Name:</label>
-        <input type="text" id="name" name="name" autofocus>
+        <input type="text" id="name" name="name" value="John Doe" autofocus>
 
         <label for="email">Email:</label>
-        <input type="email" id="email" name="email">
+        <input type="email" id="email" name="email" value="john.doe@example.com">
+
+        <label for="size">Size:</label>
+        <select id="size" name="size">
+            <option value="small">Small</option>
+            <option value="medium" selected>Medium</option>
+            <option value="large">Large</option>
+        </select>
 
         <button type="submit">Submit</button>
     </form>
