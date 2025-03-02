@@ -147,6 +147,8 @@
     
     // Draw the circle and the square
     circle = drawCircle(latitude, longitude, radius);
+    // Draw market at center of circle
+    var marker = L.marker([latitude, longitude]).addTo(map);
     // Draw the bounding square with dashed border
     var boundingSquare = L.rectangle(circle.getBounds(), {
       color: 'red',
