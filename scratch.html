@@ -3,100 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form with Classic Links</title>
+    <title>Modal Dialog Example</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        form {
-            max-width: 300px;
-            margin: 0 auto;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        input, select {
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
             width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
         }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .preset-links {
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 40%; /* Adjust as needed */
             text-align: center;
-            margin-bottom: 20px;
+            border-radius: 8px;
         }
-        .preset-links a {
-            color: #007BFF;
-            text-decoration: none;
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
             cursor: pointer;
         }
-        .preset-links a:hover {
-            text-decoration: underline;
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
         }
     </style>
-    <script>
-        function populateForm(preset) {
-            const nameInput = document.getElementById('name');
-            const emailInput = document.getElementById('email');
-            const sizeSelect = document.getElementById('size');
-
-            if (preset === 'preset1') {
-                nameInput.value = 'Alice Johnson';
-                emailInput.value = 'alice.johnson@example.com';
-                sizeSelect.value = 'small';
-            } else if (preset === 'preset2') {
-                nameInput.value = 'Bob Smith';
-                emailInput.value = 'bob.smith@example.com';
-                sizeSelect.value = 'large';
-            }
-        }
-
-        function handleSubmit(event) {
-            event.preventDefault();
-
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const size = document.getElementById('size').value;
-
-            console.log('Name:', name);
-            console.log('Email:', email);
-            console.log('Size:', size);
-        }
-    </script>
 </head>
 <body>
-    <h1>Form with Classic Links</h1>
-    <div class="preset-links">
-        <a onclick="populateForm('preset1')">Preset 1</a>
-        <a onclick="populateForm('preset2')">Preset 2</a>
+    <h1>Modal Dialog Example</h1>
+    <button id="openModal">Open Modal</button>
+
+    <!-- Modal structure -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>This is a modal dialog!</p>
+        </div>
     </div>
-    <form onsubmit="handleSubmit(event)">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" value="John Doe" autofocus>
 
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" value="john.doe@example.com">
+    <script>
+        // Get elements
+        const modal = document.getElementById("myModal");
+        const openModalButton = document.getElementById("openModal");
+        const closeButton = document.querySelector(".close");
 
-        <label for="size">Size:</label>
-        <select id="size" name="size">
-            <option value="small">Small</option>
-            <option value="medium" selected>Medium</option>
-            <option value="large">Large</option>
-        </select>
+        // Open modal when button is clicked
+        openModalButton.onclick = function() {
+            modal.style.display = "block";
+        };
 
-        <button type="submit">Submit</button>
-    </form>
+        // Close modal when the close button is clicked
+        closeButton.onclick = function() {
+            modal.style.display = "none";
+        };
+
+        // Close modal when clicking outside the modal content
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        };
+    </script>
 </body>
 </html>

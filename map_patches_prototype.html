@@ -92,7 +92,8 @@
   </div>
   <div id="map"></div>
   <div id="footer">
-    Targeting string: see console log (Cmd-Option-I)
+    <div id="targetingStr">Targeting string will appear here...</div>
+    <button id="readMoreButton" style="display: none;">Show full targeting string...</button>
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -135,7 +136,7 @@
       var upperLeft = [lat + degreesPerSide, lon];
       var segment = L.polygon([lowerLeft, lowerRight, upperRight, upperLeft, lowerLeft], {
         color: 'green',
-        fillOpacity: 0.1,
+        fillOpacity: 0.2,
         weight: 1,
       }).addTo(map);
       return segment;
@@ -214,6 +215,7 @@
       var marker = L.marker([lat, lon]).addTo(map);
 
       // Get the lon (west) and lat (south) that's the nearest fracOfDegree left of and below the bounding square
+      var kvTargetingString = 'geo_segment IN ['
       var south = circle.getBounds().getSouth();
       var southAdj = roundDownToNearestFractionOfDegree(south, fracOfDegree);
       // Draw tiles that overlap the circle's bounding square
@@ -230,12 +232,32 @@
             var cornerRepresentation = fracLabel 
               + (southAdj.toFixed(3)*1000).toString() 
               + (westAdj.toFixed(3)*1000).toString();
-            console.log(cornerRepresentation);
+            kvTargetingString += cornerRepresentation + ', ';
           }
           westAdj += fracOfDegree;
         }
         southAdj += fracOfDegree;
       }
+      kvTargetingString = kvTargetingString.slice(0,-2) + ']'; // Remove the last comma and space and add closing bracket
+      console.log(kvTargetingString);
+
+      let div = document.getElementById("targetingStr");
+      let readMoreButton = document.getElementById("readMoreButton");
+
+      // Truncate the text and add "Read More" button if necessary
+      if (kvTargetingString.length > 150) {
+          div.textContent = kvTargetingString.slice(0, 150) + "...";
+          readMoreButton.style.display = "inline-block";
+      } else {
+          div.textContent = kvTargetingString;
+          readMoreButton.style.display = "none";
+      }
+
+      // Show full text in a popup on clicking "Read More"
+      readMoreButton.addEventListener("click", function() {
+          alert(kvTargetingString); // You can replace this with a modal or any other way to display full text
+      });
+
     });    
   </script>
 </body>
