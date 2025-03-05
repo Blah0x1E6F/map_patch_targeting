@@ -62,6 +62,7 @@
         function populateForm(preset) {
             const latLonInput = document.getElementById('latlon');
             latLonInput.value = preset;
+            document.getElementById('submitBtnId').click();
         }
     </script>
 </head>
@@ -90,7 +91,7 @@
                 <option value="center">Center</option>
                 <option value="none">None</option>
             </select>
-            <button type="submit">Submit</button>
+            <button type="submit" id="submitBtnId">Submit</button>
         </form>
         <div id="presets">
             Presets:
@@ -196,7 +197,7 @@
                 fracOfDegreeHoriz = fracOfDegreeHoriz * 2;
                 fracLabel = 'L';
             } else if (seg_size == 'x-large') {
-                fracOfDegreeHoriz = fracOfDegreeHoriz * 4;
+                fracOfDegreeHoriz = fracOfDegreeHoriz * 3;
                 fracLabel = 'XL';
             }
 
