@@ -85,6 +85,9 @@
                 <option value="x-large">X-large</option>
             </select>
 
+            <label for="squareSegs">Square segments?</label>
+            <input type="checkbox" id="squareSegs" name="squareSegments">    
+
             <label for="circle_anchoring">Circle at:</label>
             <select id="circle_anchoring" name="circle_anchoring">
                 <option value="corner" selected>Corner</option>
@@ -203,7 +206,8 @@
 
             // Make geo segments more square-ish
             var fracOfDegreeVert = fracOfDegreeHoriz;
-            var makeSegmentsSquare = true; // Replace with an actual check later
+            const checkbox = document.getElementById('squareSegs');
+            const makeSegmentsSquare = checkbox.checked;
             if (makeSegmentsSquare) {
                 var verticalSquishFactor = Math.cos(lat * Math.PI / 180) // Length of 1 degree of longitude is proportional to cos(latitude)
                 if (verticalSquishFactor < 0) {
