@@ -115,7 +115,11 @@
     <script>
         "use strict";
 
-        var FRACTION_OF_DEGREE_MED = 0.003;
+        const FRACTION_OF_DEGREE_XS = 0.001;
+        const FRACTION_OF_DEGREE_S = 0.002;
+        const FRACTION_OF_DEGREE_MED = 0.003;
+        const FRACTION_OF_DEGREE_L = 0.005;
+        const FRACTION_OF_DEGREE_XL = 0.008;
         const WEIGHT = 2;
 
         var defLat = 41.010418;
@@ -187,33 +191,29 @@
             var lon = parseFloat(values[1]);
 
             var radius = parseFloat(document.getElementById('radius').value);
+
             var seg_size = document.getElementById('seg_size').value;
             var fracOfDegreeHoriz = FRACTION_OF_DEGREE_MED;
             var fracLabel = 'M';
             if (seg_size == 'x-small') {
-                fracOfDegreeHoriz = fracOfDegreeHoriz / 3;
+                fracOfDegreeHoriz = FRACTION_OF_DEGREE_XS;
                 fracLabel = 'XS';
             } else if (seg_size == 'small') {
-                fracOfDegreeHoriz = fracOfDegreeHoriz / 2;
+                fracOfDegreeHoriz = FRACTION_OF_DEGREE_S;
                 fracLabel = 'S';
             } else if (seg_size == 'large') {
-                fracOfDegreeHoriz = fracOfDegreeHoriz * 2;
+                fracOfDegreeHoriz = FRACTION_OF_DEGREE_L;
                 fracLabel = 'L';
             } else if (seg_size == 'x-large') {
-                fracOfDegreeHoriz = fracOfDegreeHoriz * 3;
+                fracOfDegreeHoriz = FRACTION_OF_DEGREE_XL;
                 fracLabel = 'XL';
             }
 
-            // Make geo segments more square-ish
             var fracOfDegreeVert = fracOfDegreeHoriz;
-            const checkbox = document.getElementById('squareSegs');
-            const makeSegmentsSquare = checkbox.checked;
-            if (makeSegmentsSquare) {
-                var verticalSquishFactor = Math.cos(lat * Math.PI / 180) // Length of 1 degree of longitude is proportional to cos(latitude)
-                if (verticalSquishFactor < 0) {
-                    verticalSquishFactor = -verticalSquishFactor; // Account for negative latitudes.
-                }
-                fracOfDegreeVert *= verticalSquishFactor;
+            // Make geo segments more square-ish?
+            if (document.getElementById('squareSegs').checked) {
+                var verticalSquishFactor = parseFloat(Math.abs(Math.cos(lat * Math.PI / 180)).toFixed(2)); // Length of 1 degree of longitude is proportional to cos(latitude)
+                fracOfDegreeVert = fracOfDegreeHoriz * verticalSquishFactor;
             }
 
             // Point positioning relative to nearest geo segment.
