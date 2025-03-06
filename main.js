@@ -2,7 +2,7 @@
 
 const FRACTION_OF_DEGREE_XS = 0.001;
 const FRACTION_OF_DEGREE_S = 0.002;
-const FRACTION_OF_DEGREE_MED = 0.003;
+const FRACTION_OF_DEGREE_M = 0.003;
 const FRACTION_OF_DEGREE_L = 0.005;
 const FRACTION_OF_DEGREE_XL = 0.008;
 const WEIGHT = 2;
@@ -84,7 +84,7 @@ document.getElementById('mapForm').addEventListener('submit', function (event) {
     var radius = parseFloat(document.getElementById('radius').value);
 
     var seg_size = document.getElementById('seg_size').value;
-    var fracOfDegreeHoriz = FRACTION_OF_DEGREE_MED;
+    var fracOfDegreeHoriz = FRACTION_OF_DEGREE_M;
     var fracLabel = 'M';
     if (seg_size == 'x-small') {
         fracOfDegreeHoriz = FRACTION_OF_DEGREE_XS;
