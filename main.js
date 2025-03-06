@@ -1,5 +1,7 @@
 "use strict";
 
+const DEBUG = true;
+
 const FRACTION_OF_DEGREE_XS = 0.001;
 const FRACTION_OF_DEGREE_S = 0.002;
 const FRACTION_OF_DEGREE_M = 0.003;
@@ -129,7 +131,11 @@ document.getElementById('mapForm').addEventListener('submit', function (event) {
     map.setView([lat, lon], 16);
 
     var circle = drawCircle(lat, lon, radius);
-    var marker = L.marker([lat, lon]).addTo(map);
+    L.marker([lat, lon]).addTo(map);
+
+    if (DEBUG) {
+        L.rectangle(circle.getBounds(), {color: "blue", weight: 1, fillOpacity: 0.1, dashArray: "5, 5"}).addTo(map);
+    }
 
     // Get the longitude (west) and latitude (south) that's the nearest fracOfDegreeHoriz left of 
     // and the nearest fracOfDegreeVert below the bounding square. Then increment toward the right
