@@ -1,73 +1,10 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <title>Leaflet Map with Lat-Lon Form</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="styles.css" />
-    <script src="secret_do_not_upload_to_github.js"></script>
+    <meta charset="UTF-8">
+    <title>Hello, World!</title>
 </head>
-
 <body>
-    <div id="leftPane">
-        <div id="formContainer">
-            <form id="mapForm">
-                <div class="labelAndField">
-                    <label for="latlon">Lat,lon:</label><br />
-                    <input type="text" id="latlon" value="41.010418,-73.920776" required autofocus><br />
-                <!-- </div>
-
-                <div class="labelAndField"> -->
-                    <a onclick="populateForm('40.735378,-73.990694')">NYC</a> | 
-                    <a onclick="populateForm('37.755310,-122.420961')">SF</a> |
-                    <a onclick="populateForm('48.852916,2.350069')">Paris</a> | 
-                    <a onclick="populateForm('51.507754,-0.127941')">London</a> | 
-                    <a onclick="populateForm('41.010418,-73.920776')">Maksim's crib</a>
-                </div>
-
-                <div class="labelAndField">
-                    <label for="radius">Radius (m):</label><br />
-                    <input type="number" id="radius" value="500" step="50" required>
-                </div>
-
-                <div class="labelAndField">
-                    <label for="seg_size">Segments:</label><br />
-                    <select id="seg_size" name="segment_size">
-                        <option value="x-small" selected>X-Small</option>
-                        <option value="small">Small</option>
-                        <option value="medium">Medium</option>
-                        <option value="large">Large</option>
-                        <option value="x-large">X-large</option>
-                    </select>
-                    <span style="padding-left:5px">and</span>
-                    <input type="checkbox" id="squareSegs" name="squareSegments">
-                    <label for="squareSegs">squared</label>
-
-                </div>
-                <div class="labelAndField">
-                    <label for="circle_anchoring">Position circle at:</label>
-                    <br />
-                    <select id="circle_anchoring" name="circle_anchoring">
-                        <option value="corner">SW corner of nearest segment</option>
-                        <option value="center" selected>Center of nearest segment</option>
-                        <option value="none">Original latlon</option>
-                    </select>
-                </div>
-                <button type="submit" id="submitBtnId">Submit</button>
-            </form>
-        </div>
-        <div id="outputContainer">
-            <p id="outputHeading">Output targeting string:</p>
-            <p id="outputContent">
-            </p>
-        </div>
-    </div>
-    <div id="map"></div>
-
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <!-- For some reason if I included this in <head>, nothing would work.
-        Looks like something in it requires the above HTML to have been defined first. -->
-    <script src="main.js"></script>
+    <h1>Hello, World!</h1>
 </body>
-
 </html>
