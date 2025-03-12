@@ -12,15 +12,23 @@ const WEIGHT = 2;
 var defLat = 41.010418;
 var defLon = -73.920776;
 var map = L.map('map').setView([defLat, defLon], 16);
-L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + mapBoxToken, {
+let token = getToken();
+L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + token, {
     maxZoom: 18,
     id: 'mapbox/streets-v11', // You can use other styles like 'mapbox/satellite-v9'
     tileSize: 512,
     zoomOffset: -1,
-    accessToken: mapBoxToken
+    accessToken: token
 }).addTo(map);
-
 L.marker([defLat, defLon]).addTo(map);
+
+function getToken() {
+    if (typeof mapBoxToken !== 'undefined') {
+        return mapBoxToken;
+    } else {
+        console.error("mapBoxToken is not defined");
+    }    return 'blah';
+}
 
 function populateForm(preset) {
     const latLonInput = document.getElementById('latlon');
@@ -169,6 +177,5 @@ document.getElementById('mapForm').addEventListener('submit', function (event) {
         southAdj += fracOfDegreeVert;
     }
     kvTargetingString = kvTargetingString.slice(0, -2) + ']'; // Remove the last comma and space and add closing bracket
-    console.log(kvTargetingString);
     displayTargetingString(kvTargetingString);
 });    
