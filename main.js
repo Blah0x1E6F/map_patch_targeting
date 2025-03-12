@@ -12,22 +12,50 @@ const WEIGHT = 2;
 var defLat = 41.010418;
 var defLon = -73.920776;
 var map = L.map('map').setView([defLat, defLon], 16);
-let token = getToken();
-L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + token, {
+const token = getToken();
+
+var myLayer = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + token, {
     maxZoom: 18,
     id: 'mapbox/streets-v11', // You can use other styles like 'mapbox/satellite-v9'
     tileSize: 512,
     zoomOffset: -1,
     accessToken: token
 }).addTo(map);
+
+myLayer.on('tileerror', function(error, tile) {
+    console.log('[XX] Tile loading error:', error);
+    console.log('Failed tile:', tile);
+    console.log('Check map token!');
+});
+  
+
+
+// Draw center marker
 L.marker([defLat, defLon]).addTo(map);
 
 function getToken() {
+    // -- FOR LOCAL EXECUTION --
+    // Remember, this variable comes from secret_do_not_upload_to_github.js, which is not on GitHub, only local.
+    // That script is included before *this* script in the index.html file.
     if (typeof mapBoxToken !== 'undefined') {
         return mapBoxToken;
-    } else {
-        console.error("mapBoxToken is not defined");
-    }    return 'blah';
+    } 
+
+    // -- FOR EXECUTION ON GITHUB PAGES --    
+    // Since no secrets file, we don't have mapBoxToken defined. Try to construct token from query string.
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const otherPart = urlParams.get('a');
+    if (otherPart !== null && otherPart !== '') {
+        return 'pk.eyJ1Ijoicm1hbWJvMTMiLCJhIjoiY203cGQ2YXloMG1uMjJqcTRpemZ4dmF6NCJ9.' + otherPart;
+    }
+    const longMsg = `
+        [XX] Can't load map due to incomplete Map Box token. 
+        To load map, complete the token by passing the suffix after the last '.' in the token.
+        Use query string param 'a' like so '?a=PUT_TOKEN_SUFFIX_HERE'.
+    `
+    console.error(longMsg);
+    return '********* [XX] BLAH BLAH THIS TOKEN IS INVALID *********';
 }
 
 function populateForm(preset) {
