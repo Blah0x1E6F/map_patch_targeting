@@ -1,6 +1,6 @@
 "use strict";
 
-const DEBUG = true;
+const DEBUG = false;
 
 const FRACTION_OF_DEGREE_XS = 0.001;
 const FRACTION_OF_DEGREE_S = 0.002;
@@ -72,6 +72,11 @@ function isOverlap(circle, sw, se, ne, nw) {
     } else {
         return false;
     }
+}
+
+function displayTargetingString(kvTargetingString) {
+    let div = document.getElementById("outputContent");
+    div.textContent = kvTargetingString;
 }
 
 // Form submission event listener
@@ -165,22 +170,5 @@ document.getElementById('mapForm').addEventListener('submit', function (event) {
     }
     kvTargetingString = kvTargetingString.slice(0, -2) + ']'; // Remove the last comma and space and add closing bracket
     console.log(kvTargetingString);
-
-    let div = document.getElementById("targetingStr");
-    let readMoreButton = document.getElementById("readMoreButton");
-
-    // Truncate the text and add "Read More" button if necessary
-    if (kvTargetingString.length > 150) {
-        div.textContent = kvTargetingString.slice(0, 150) + "...";
-        readMoreButton.style.display = "inline-block";
-    } else {
-        div.textContent = kvTargetingString;
-        readMoreButton.style.display = "none";
-    }
-
-    // Show full text in a popup on clicking "Read More"
-    readMoreButton.addEventListener("click", function () {
-        alert(kvTargetingString); // You can replace this with a modal or any other way to display full text
-    });
-
+    displayTargetingString(kvTargetingString);
 });    

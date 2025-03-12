@@ -1,87 +1,73 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modal Dialog Example</title>
-    <style>
-        /* Modal styles */
-        .modal {
-            display: none;
-            /* Hidden by default */
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            /* Semi-transparent background */
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 40%;
-            /* Adjust as needed */
-            text-align: center;
-            border-radius: 8px;
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-        }
-    </style>
+    <title>Leaflet Map with Lat-Lon Form</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="secret_do_not_upload_to_github.js"></script>
 </head>
 
 <body>
-    <h1>Modal Dialog Example</h1>
-    <button id="openModal">Open Modal</button>
+    <div id="leftPane">
+        <div id="formContainer">
+            <form id="mapForm">
+                <div class="labelAndField">
+                    <label for="latlon">Lat,lon:</label><br />
+                    <input type="text" id="latlon" value="41.010418,-73.920776" required autofocus><br />
+                <!-- </div>
 
-    <!-- Modal structure -->
-    <div id="myModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <p>This is a modal dialog!</p>
+                <div class="labelAndField"> -->
+                    <a onclick="populateForm('40.735378,-73.990694')">NYC</a> | 
+                    <a onclick="populateForm('37.755310,-122.420961')">SF</a> |
+                    <a onclick="populateForm('48.852916,2.350069')">Paris</a> | 
+                    <a onclick="populateForm('51.507754,-0.127941')">London</a> | 
+                    <a onclick="populateForm('41.010418,-73.920776')">Maksim's crib</a>
+                </div>
+
+                <div class="labelAndField">
+                    <label for="radius">Radius (m):</label><br />
+                    <input type="number" id="radius" value="500" step="50" required>
+                </div>
+
+                <div class="labelAndField">
+                    <label for="seg_size">Segments:</label><br />
+                    <select id="seg_size" name="segment_size">
+                        <option value="x-small" selected>X-Small</option>
+                        <option value="small">Small</option>
+                        <option value="medium">Medium</option>
+                        <option value="large">Large</option>
+                        <option value="x-large">X-large</option>
+                    </select>
+                    <span style="padding-left:5px">and</span>
+                    <input type="checkbox" id="squareSegs" name="squareSegments">
+                    <label for="squareSegs">squared</label>
+
+                </div>
+                <div class="labelAndField">
+                    <label for="circle_anchoring">Position circle at:</label>
+                    <br />
+                    <select id="circle_anchoring" name="circle_anchoring">
+                        <option value="corner">SW corner of nearest segment</option>
+                        <option value="center" selected>Center of nearest segment</option>
+                        <option value="none">Original latlon</option>
+                    </select>
+                </div>
+                <button type="submit" id="submitBtnId">Submit</button>
+            </form>
+        </div>
+        <div id="outputContainer">
+            <p id="outputHeading">Output targeting string:</p>
+            <p id="outputContent">
+            </p>
         </div>
     </div>
+    <div id="map"></div>
 
-    <script>
-        // Get elements
-        const modal = document.getElementById("myModal");
-        const openModalButton = document.getElementById("openModal");
-        const closeButton = document.querySelector(".close");
-
-        // Open modal when button is clicked
-        openModalButton.onclick = function () {
-            modal.style.display = "block";
-        };
-
-        // Close modal when the close button is clicked
-        closeButton.onclick = function () {
-            modal.style.display = "none";
-        };
-
-        // Close modal when clicking outside the modal content
-        window.onclick = function (event) {
-            if (event.target === modal) {
-                modal.style.display = "none";
-            }
-        };
-    </script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- For some reason if I included this in <head>, nothing would work.
+        Looks like something in it requires the above HTML to have been defined first. -->
+    <script src="main.js"></script>
 </body>
 
 </html>
