@@ -75,3 +75,15 @@ a:hover {
 #submitBtnId:active {
     background-color: #01264b;
 }
+
+input:disabled {
+    background-color: #e0e0e0; /* Light gray background */
+    border: 1px solid #ccc;   /* Subtle border */
+    color: #999;             /* Gray text color */
+    cursor: not-allowed;     /* Change cursor to indicate disabled state */
+}
+
+.grey-out {
+    color: #999; /* Grey text color */
+}
+

@@ -18,9 +18,7 @@
                 <div class="labelAndField">
                     <label for="latlon">Lat,lon:</label><br />
                     <input type="text" id="latlon" value="41.010418,-73.920776" required autofocus><br />
-                <!-- </div>
 
-                <div class="labelAndField"> -->
                     <a onclick="populateForm('40.735378,-73.990694')">NYC</a> | 
                     <a onclick="populateForm('37.755310,-122.420961')">SF</a> |
                     <a onclick="populateForm('48.852916,2.350069')">Paris</a> | 
@@ -29,8 +27,22 @@
                 </div>
 
                 <div class="labelAndField">
-                    <label for="radius">Radius (m):</label><br />
+                    <label>
+                        <input type="checkbox" id="toggleCircle" checked>
+                        Radius (m)
+                    </label><br />                    
+                    <!-- <label for="radius">Radius (m):</label><br /> -->
                     <input type="number" id="radius" value="500" step="50" required>
+                </div>
+
+                <div class="labelAndField">
+                    <label for="circle_anchoring" id="textToGreyOut">Position circle at:</label>
+                    <br />
+                    <select id="circle_anchoring" name="circle_anchoring">
+                        <option value="corner">SW corner of nearest segment</option>
+                        <option value="center" selected>Center of nearest segment</option>
+                        <option value="none">Original latlon</option>
+                    </select>
                 </div>
 
                 <div class="labelAndField">
@@ -45,16 +57,6 @@
                     <span style="padding-left:5px">and</span>
                     <input type="checkbox" id="squareSegs" name="squareSegments">
                     <label for="squareSegs">squared</label>
-
-                </div>
-                <div class="labelAndField">
-                    <label for="circle_anchoring">Position circle at:</label>
-                    <br />
-                    <select id="circle_anchoring" name="circle_anchoring">
-                        <option value="corner">SW corner of nearest segment</option>
-                        <option value="center" selected>Center of nearest segment</option>
-                        <option value="none">Original latlon</option>
-                    </select>
                 </div>
                 <button type="submit" id="submitBtnId">Submit</button>
                 <p style="color: #007bff"><strong>Note</strong>: after submission, click on map to add or remove segments.</p>

@@ -138,6 +138,31 @@ function displayTargetingString(kvTargetingString) {
     div.textContent = kvTargetingString;
 }
 
+const toggleCircleChk = document.getElementById('toggleCircle');
+const radiusInput = document.getElementById('radius');
+const circleAnchoringSelect = document.getElementById('circle_anchoring');
+const textToGreyOut = document.getElementById('textToGreyOut');
+radiusInput.disabled = !toggleCircleChk.checked;
+circleAnchoringSelect.disabled = !toggleCircleChk.checked;
+if (!toggleCircleChk.checked) {
+    textToGreyOut.classList.add('grey-out');
+}
+
+
+// Add an event listener to the checkbox
+toggleCircleChk.addEventListener('change', () => {
+    // Disable or enable the radius field based on checkbox state
+    radiusInput.disabled = !toggleCircleChk.checked;
+    circleAnchoringSelect.disabled = !toggleCircleChk.checked;
+    // Add or remove the "grey-out" class based on checkbox state
+    if (toggleCircleChk.checked) {
+        textToGreyOut.classList.remove('grey-out');
+    } else {
+        textToGreyOut.classList.add('grey-out');
+    }
+});
+
+
 // Form submission event listener
 document.getElementById('mapForm').addEventListener('submit', function (event) {
     event.preventDefault();
@@ -146,8 +171,6 @@ document.getElementById('mapForm').addEventListener('submit', function (event) {
     const values = latLonStr.split(',');
     var lat = parseFloat(values[0]);
     var lon = parseFloat(values[1]);
-
-    var radius = parseFloat(document.getElementById('radius').value);
 
     var seg_size = document.getElementById('seg_size').value;
     fracOfDegreeHoriz = FRACTION_OF_DEGREE_M;
@@ -193,41 +216,52 @@ document.getElementById('mapForm').addEventListener('submit', function (event) {
 
     // Recenter the map on the new coordinates
     map.setView([lat, lon], 16);
-
-    var circle = drawCircle(lat, lon, radius);
     L.marker([lat, lon]).addTo(map);
-
-    if (DEBUG) {
-        L.rectangle(circle.getBounds(), {color: "blue", weight: 1, fillOpacity: 0.1, dashArray: "5, 5"}).addTo(map);
-    }
 
     // REMEMBER to reinitialize the set of segments.
     segmentMap.clear();
 
-    // Get the longitude (west) and latitude (south) that's the nearest fracOfDegreeHoriz left of 
-    // and the nearest fracOfDegreeVert below the bounding square. Then increment toward the right
-    // and toward the top by the corresponding fracOfDegree[direction] until just beyond the bounding rect.
-    var south = circle.getBounds().getSouth();
-    var southAdj = roundDownToNearestFractionOfDegree(south, fracOfDegreeVert);
-    // Draw tiles that overlap the circle
-    while (southAdj < circle.getBounds().getNorth()) {
-        var west = circle.getBounds().getWest();
-        var westAdj = roundDownToNearestFractionOfDegree(west, fracOfDegreeHoriz);
-        while (westAdj < circle.getBounds().getEast()) {
-            var sw = L.latLng(southAdj, westAdj);
-            var se = L.latLng(southAdj, westAdj + fracOfDegreeHoriz);
-            var ne = L.latLng(southAdj + fracOfDegreeVert, westAdj + fracOfDegreeHoriz);
-            var nw = L.latLng(southAdj + fracOfDegreeVert, westAdj);
-            if (isOverlap(circle, sw, se, ne, nw)) {
-                let key = JSON.stringify([southAdj.toFixed(5), westAdj.toFixed(5)]);
-                let segment = drawSegment(southAdj, westAdj, fracOfDegreeVert, fracOfDegreeHoriz);
-                segmentMap.set(key, segment);
-            }
-            westAdj += fracOfDegreeHoriz;
+    // Draw the circle and its approximation with geo segments?
+    if (toggleCircleChk.checked) {
+        var radius = parseFloat(document.getElementById('radius').value);
+        var circle = drawCircle(lat, lon, radius);
+        if (DEBUG) {
+            L.rectangle(circle.getBounds(), {color: "blue", weight: 1, fillOpacity: 0.1, dashArray: "5, 5"}).addTo(map);
         }
-        southAdj += fracOfDegreeVert;
-    }
 
+        // Get the longitude (west) and latitude (south) that's the nearest fracOfDegreeHoriz left of 
+        // and the nearest fracOfDegreeVert below the bounding square. Then increment toward the right
+        // and toward the top by the corresponding fracOfDegree[direction] until just beyond the bounding rect.
+        var south = circle.getBounds().getSouth();
+        var southAdj = roundDownToNearestFractionOfDegree(south, fracOfDegreeVert);
+        // Draw tiles that overlap the circle
+        while (southAdj < circle.getBounds().getNorth()) {
+            var west = circle.getBounds().getWest();
+            var westAdj = roundDownToNearestFractionOfDegree(west, fracOfDegreeHoriz);
+            while (westAdj < circle.getBounds().getEast()) {
+                var sw = L.latLng(southAdj, westAdj);
+                var se = L.latLng(southAdj, westAdj + fracOfDegreeHoriz);
+                var ne = L.latLng(southAdj + fracOfDegreeVert, westAdj + fracOfDegreeHoriz);
+                var nw = L.latLng(southAdj + fracOfDegreeVert, westAdj);
+                if (isOverlap(circle, sw, se, ne, nw)) {
+                    let key = JSON.stringify([southAdj.toFixed(5), westAdj.toFixed(5)]);
+                    let segment = drawSegment(southAdj, westAdj, fracOfDegreeVert, fracOfDegreeHoriz);
+                    segmentMap.set(key, segment);
+                }
+                westAdj += fracOfDegreeHoriz;
+            }
+            southAdj += fracOfDegreeVert;
+        }
+    } else {
+        // Draw the segment that contains the lat/lon.
+        const southAdj = roundDownToNearestFractionOfDegree(lat, fracOfDegreeVert);
+        const westAdj = roundDownToNearestFractionOfDegree(lon, fracOfDegreeHoriz);
+        const southAdjFixed = southAdj.toFixed(5);
+        const westAdjFixed = westAdj.toFixed(5);
+        const key = JSON.stringify([southAdjFixed, westAdjFixed]);
+        let segment = drawSegment(southAdj, westAdj, fracOfDegreeVert, fracOfDegreeHoriz);
+        segmentMap.set(key, segment);
+    }
     // Update the output div with the targeting string
     displayTargetingString(constructTargetingString());
     console.log('Segments in set: ' + segmentMap.size);
