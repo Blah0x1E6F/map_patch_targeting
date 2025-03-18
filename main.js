@@ -9,6 +9,13 @@ const FRACTION_OF_DEGREE_L = 0.005;
 const FRACTION_OF_DEGREE_XL = 0.008;
 const WEIGHT = 2;
 
+// Moving these to globals, since I need to access them from map click handler.
+let fracOfDegreeHoriz = 0;
+let fracOfDegreeVert = 0;
+let fracLabel = '';
+
+const segmentMap = new Map();
+
 var defLat = 41.010418;
 var defLon = -73.920776;
 var map = L.map('map').setView([defLat, defLon], 16);
@@ -110,6 +117,22 @@ function isOverlap(circle, sw, se, ne, nw) {
     }
 }
 
+function constructTargetingString() {
+    let kvTargetingString = 'geo_segment IN ['
+    for (const [key, value] of segmentMap.entries()) {
+        var corner = JSON.parse(key);
+        var cornerRepresentation = fracLabel
+        + (parseFloat(corner[0]).toFixed(3) * 1000).toString()
+        + (parseFloat(corner[1]).toFixed(3) * 1000).toString();
+        kvTargetingString += cornerRepresentation + ', ';
+    }
+    if (segmentMap.size > 0) {
+        kvTargetingString = kvTargetingString.slice(0, -2); // Remove the last comma and space
+    }
+    kvTargetingString += ']';
+    return kvTargetingString
+}
+
 function displayTargetingString(kvTargetingString) {
     let div = document.getElementById("outputContent");
     div.textContent = kvTargetingString;
@@ -127,8 +150,8 @@ document.getElementById('mapForm').addEventListener('submit', function (event) {
     var radius = parseFloat(document.getElementById('radius').value);
 
     var seg_size = document.getElementById('seg_size').value;
-    var fracOfDegreeHoriz = FRACTION_OF_DEGREE_M;
-    var fracLabel = 'M';
+    fracOfDegreeHoriz = FRACTION_OF_DEGREE_M;
+    fracLabel = 'M';
     if (seg_size == 'x-small') {
         fracOfDegreeHoriz = FRACTION_OF_DEGREE_XS;
         fracLabel = 'XS';
@@ -143,7 +166,7 @@ document.getElementById('mapForm').addEventListener('submit', function (event) {
         fracLabel = 'XL';
     }
 
-    var fracOfDegreeVert = fracOfDegreeHoriz;
+    fracOfDegreeVert = fracOfDegreeHoriz;
     // Make geo segments more square-ish?
     if (document.getElementById('squareSegs').checked) {
         var verticalSquishFactor = parseFloat(Math.abs(Math.cos(lat * Math.PI / 180)).toFixed(2)); // Length of 1 degree of longitude is proportional to cos(latitude)
@@ -178,10 +201,12 @@ document.getElementById('mapForm').addEventListener('submit', function (event) {
         L.rectangle(circle.getBounds(), {color: "blue", weight: 1, fillOpacity: 0.1, dashArray: "5, 5"}).addTo(map);
     }
 
+    // REMEMBER to reinitialize the set of segments.
+    segmentMap.clear();
+
     // Get the longitude (west) and latitude (south) that's the nearest fracOfDegreeHoriz left of 
     // and the nearest fracOfDegreeVert below the bounding square. Then increment toward the right
     // and toward the top by the corresponding fracOfDegree[direction] until just beyond the bounding rect.
-    var kvTargetingString = 'geo_segment IN ['
     var south = circle.getBounds().getSouth();
     var southAdj = roundDownToNearestFractionOfDegree(south, fracOfDegreeVert);
     // Draw tiles that overlap the circle
@@ -194,16 +219,47 @@ document.getElementById('mapForm').addEventListener('submit', function (event) {
             var ne = L.latLng(southAdj + fracOfDegreeVert, westAdj + fracOfDegreeHoriz);
             var nw = L.latLng(southAdj + fracOfDegreeVert, westAdj);
             if (isOverlap(circle, sw, se, ne, nw)) {
-                drawSegment(southAdj, westAdj, fracOfDegreeVert, fracOfDegreeHoriz);
-                var cornerRepresentation = fracLabel
-                    + (southAdj.toFixed(3) * 1000).toString()
-                    + (westAdj.toFixed(3) * 1000).toString();
-                kvTargetingString += cornerRepresentation + ', ';
+                let key = JSON.stringify([southAdj.toFixed(5), westAdj.toFixed(5)]);
+                let segment = drawSegment(southAdj, westAdj, fracOfDegreeVert, fracOfDegreeHoriz);
+                segmentMap.set(key, segment);
             }
             westAdj += fracOfDegreeHoriz;
         }
         southAdj += fracOfDegreeVert;
     }
-    kvTargetingString = kvTargetingString.slice(0, -2) + ']'; // Remove the last comma and space and add closing bracket
-    displayTargetingString(kvTargetingString);
-});    
+
+    // Update the output div with the targeting string
+    displayTargetingString(constructTargetingString());
+    console.log('Segments in set: ' + segmentMap.size);
+});  
+
+map.on('click', function(event) {
+    if (fracLabel === '') { 
+        return; // Don't do anything if form hasn't been submitted yet.
+    }
+    const lat = event.latlng.lat;
+    const lon = event.latlng.lng;
+    
+    // Determine if the click is within a geo segment
+    const southAdj = roundDownToNearestFractionOfDegree(lat, fracOfDegreeVert);
+    const westAdj = roundDownToNearestFractionOfDegree(lon, fracOfDegreeHoriz);
+    const southAdjFixed = southAdj.toFixed(5);
+    const westAdjFixed = westAdj.toFixed(5);
+    const key = JSON.stringify([southAdjFixed, westAdjFixed]);
+    if (segmentMap.has(key)) {
+        // Remove the segment from map and from the set
+        let segment = segmentMap.get(key);
+        map.removeLayer(segment);
+        segmentMap.delete(key);
+        console.log('Removed segment at ' + key);
+    } else {
+        // Draw the segment on the map and add it to the set
+        let segment = drawSegment(southAdj, westAdj, fracOfDegreeVert, fracOfDegreeHoriz);
+        segmentMap.set(key, segment);
+        console.log('Added segment at ' + key);
+    }
+
+    // Update the output div with the new targeting string
+    displayTargetingString(constructTargetingString());
+    console.log('Segments in set: ' + segmentMap.size);
+});
